@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_HUB_REPO = 'manjukolkar007/ecommerce-app'   // Your Docker Hub repo
+        DOCKER_HUB_REPO = 'kamatagi89/ecommerce-app'   // Your Docker Hub repo
     }
 
     stages {
@@ -10,7 +10,7 @@ pipeline {
         stage('Checkout Code') {
             steps {
                 echo '📦 Cloning repository from GitHub...'
-                git branch: 'master', url: 'https://github.com/manjukolkar/CI-Project.git'
+                git branch: 'master', url: 'https://github.com/amit7845/CI-Project.git'
             }
         }
 
@@ -56,8 +56,8 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push manjukolkar007/ecommerce-app:${BUILD_NUMBER}
-                        docker push manjukolkar007/ecommerce-app:latest
+                        docker push kamatagi89/ecommerce-app:${BUILD_NUMBER}
+                        docker push kamatagi89/ecommerce-app:latest
                     '''
                 }
             }
