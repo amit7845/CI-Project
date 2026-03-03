@@ -1,8 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        sonarScanner 'SonarScanner'   // 👈 Must match Global Tool name
+    }
+
     environment {
-        DOCKER_HUB_REPO = 'kamatagi89/ecommerce-app'   // Your Docker Hub repo
+        DOCKER_HUB_REPO = 'kamatagi89/ecommerce-app'
     }
 
     stages {
@@ -27,11 +31,9 @@ pipeline {
                 withSonarQubeEnv('SonarQube') {
                     sh '''
                         sonar-scanner \
-                          -Dsonar.projectKey=ecommerce-app \
-                          -Dsonar.projectName="E-Commerce Application" \
-                          -Dsonar.sources=server,public \
-                          -Dsonar.host.url=$SONAR_HOST_URL \
-                          -Dsonar.login=$SONAR_AUTH_TOKEN
+                        -Dsonar.projectKey=ecommerce-app \
+                        -Dsonar.projectName="E-Commerce Application" \
+                        -Dsonar.sources=server,public
                     '''
                 }
             }
@@ -53,11 +55,15 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 echo '🚀 Pushing image to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-credentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
                     sh '''
                         echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push kamatagi89/ecommerce-app:${BUILD_NUMBER}
-                        docker push kamatagi89/ecommerce-app:latest
+                        docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}
+                        docker push ${DOCKER_HUB_REPO}:latest
                     '''
                 }
             }
