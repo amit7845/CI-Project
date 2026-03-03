@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        sonarScanner 'SonarScanner'   // 👈 Must match Global Tool name
+        sonarRunner 'SonarScanner'  // 👈 Must match Global Tool name
     }
 
     environment {
