@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        sonarRunner 'SonarScanner'  // 👈 Must match Global Tool name
+        sonarRunner 'SonarScanner'
     }
 
     environment {
@@ -11,23 +11,14 @@ pipeline {
 
     stages {
 
-        stage('Checkout Code') {
-            steps {
-                echo '📦 Cloning repository from GitHub...'
-                git branch: 'master', url: 'https://github.com/amit7845/CI-Project.git'
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
-                echo '📦 Installing Node.js dependencies...'
                 sh 'npm install'
             }
         }
 
-        stage('Code Analysis - SonarQube') {
+        stage('SonarQube Analysis') {
             steps {
-                echo '🔍 Running SonarQube static code analysis...'
                 withSonarQubeEnv('SonarQube') {
                     sh '''
                         sonar-scanner \
@@ -37,45 +28,6 @@ pipeline {
                     '''
                 }
             }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                echo '🐳 Building Docker image...'
-                script {
-                    def IMAGE_TAG = "${BUILD_NUMBER}"
-                    sh """
-                        docker build -t ${DOCKER_HUB_REPO}:${IMAGE_TAG} .
-                        docker tag ${DOCKER_HUB_REPO}:${IMAGE_TAG} ${DOCKER_HUB_REPO}:latest
-                    """
-                }
-            }
-        }
-
-        stage('Push to Docker Hub') {
-            steps {
-                echo '🚀 Pushing image to Docker Hub...'
-                withCredentials([usernamePassword(
-                    credentialsId: 'docker-hub-credentials',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push ${DOCKER_HUB_REPO}:${BUILD_NUMBER}
-                        docker push ${DOCKER_HUB_REPO}:latest
-                    '''
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ CI pipeline completed successfully!'
-        }
-        failure {
-            echo '❌ CI pipeline failed. Please check logs above.'
         }
     }
 }
